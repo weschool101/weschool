@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة مدرسة WE للتكنولوجيا التطبيقية</title>
+    
+    <!-- ربط مكتبة Firebase السحابية -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --we-purple: #3f0071;
@@ -28,7 +33,6 @@
             overflow-x: hidden;
         }
 
-        /* الخلفية التقنية الاحترافية */
         .tech-background {
             position: fixed;
             top: 0;
@@ -72,7 +76,6 @@
             background-size: 40px 40px;
         }
 
-        /* شاشة تسجيل الدخول */
         #login-screen {
             display: flex;
             justify-content: center;
@@ -177,7 +180,6 @@
             font-weight: bold;
         }
 
-        /* التطبيق الرئيسي */
         #app-screen {
             display: none;
             min-height: 100vh;
@@ -307,7 +309,6 @@
             }
         }
 
-        /* المناهج الدراسية */
         .lesson-card {
             background: #f8f9fa;
             padding: 16px;
@@ -333,7 +334,6 @@
         }
         .yt-link:hover { opacity: 0.85; }
 
-        /* ألعاب البريك */
         .games-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -397,7 +397,6 @@
             font-size: 15px;
         }
 
-        /* منظم المهام والواجبات */
         .todo-input-group {
             display: flex;
             flex-direction: column;
@@ -457,7 +456,6 @@
 
     <div class="tech-background"></div>
 
-    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen">
         <div class="login-card">
             <div class="logo-badge">WE SCHOOL</div>
@@ -480,7 +478,6 @@
         </div>
     </div>
 
-    <!-- التطبيق الرئيسي -->
     <div id="app-screen">
         <header>
             <div class="header-title">
@@ -496,8 +493,7 @@
             </nav>
         </header>
 
-        <div class="main-content">
-            <!-- تبويب المناهج -->
+        <main class="main-content">
             <div id="courses" class="tab-content active">
                 <h3>المناهج الدراسية مع روابط الشرح</h3>
                 <div class="lesson-card">
@@ -512,11 +508,9 @@
                 </div>
             </div>
 
-            <!-- تبويب الواجبات المطلوبة -->
             <div id="homework" class="tab-content">
                 <h3>الواجبات المطلوبة للطلاب</h3>
                 
-                <!-- لوحة الإدارة لنشر الواجبات -->
                 <div id="admin-homework-box" style="display: none; margin-bottom: 20px; background: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px solid #00e1ff;">
                     <p style="font-weight: bold; color: var(--we-purple); margin-bottom: 8px;">⚙️ لوحة تحكم الإدارة (نشر واجب جديد للجميع):</p>
                     <div class="todo-input-group">
@@ -526,11 +520,10 @@
                 </div>
 
                 <ul id="homeworkList">
-                    <!-- الواجبات تظهر هنا للجميع -->
+                    <p style='color:#777; font-size:14px; padding:10px;'>جاري تحميل الواجبات من السحابة...</p>
                 </ul>
             </div>
 
-            <!-- تبويب البريك والألعاب -->
             <div id="break" class="tab-content">
                 <h3>اختر لعبة لتجديد نشاط عقلك:</h3>
                 <div class="games-grid">
@@ -621,7 +614,6 @@
                 </div>
             </div>
 
-            <!-- تبويب منظم اليوم -->
             <div id="planner" class="tab-content">
                 <h3>منظم المهام الشخصية</h3>
                 <div class="todo-input-group">
@@ -630,10 +622,29 @@
                 </div>
                 <ul id="taskList"></ul>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
+        // إعدادات Firebase الخاصة بمشروعك السحابي
+        const firebaseConfig = {
+            apiKey: "AIzaSyAuJJRcKtSl181xSJf4aaP00TUpk8BTk8",
+            authDomain: "we-school-platform.firebaseapp.com",
+            projectId: "we-school-platform",
+            storageBucket: "we-school-platform.firebasestorage.app",
+            messagingSenderId: "109714028866",
+            appId: "1:109714028866:web:32c98de0f338025a4870db",
+            measurementId: "G-X3HT4G28LV"
+        };
+        
+        // تهيئة الفايربيس وقاعدة البيانات سحابياً
+        try {
+            firebase.initializeApp(firebaseConfig);
+            var db = firebase.firestore();
+        } catch(e) {
+            console.log("Firebase initialization error: ", e);
+        }
+
         const users = {
             "A-1": "o90po90p",
             "weismailia": "we10203040"
@@ -644,15 +655,18 @@
             const role = localStorage.getItem("we_role");
             if (logged === "true" && role) {
                 initSession(role);
+            } else {
+                document.getElementById("login-screen").style.display = "flex";
+                document.getElementById("app-screen").style.display = "none";
             }
         });
 
         function switchToAdminMode() {
             document.getElementById("login-title").innerText = "بوابة دخول الإدارة";
             document.getElementById("login-subtitle").innerText = "أدخل بيانات حساب الإدارة الخاص بك (weismailia)";
-            document.getElementById("username").value = "";
+            document.getElementById("username").value = "weismailia";
             document.getElementById("password").value = "";
-            document.getElementById("username").focus();
+            document.getElementById("password").focus();
             document.getElementById("error").innerText = "";
         }
 
@@ -714,47 +728,58 @@
             if (btn) btn.classList.add('active');
         }
 
+        // نشر الواجبات عبر السحابة لتظهر لكل الطلاب عالمياً لحظياً
         function addHomework() {
             const input = document.getElementById("homeworkInput");
             const text = input.value.trim();
             if (!text) return;
 
-            let list = JSON.parse(localStorage.getItem("we_homeworks") || "[]");
-            list.push(text);
-            localStorage.setItem("we_homeworks", JSON.stringify(list));
-            input.value = "";
-            loadHomeworks();
+            if (typeof db !== 'undefined') {
+                db.collection("homeworks").add({
+                    text: text,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    input.value = "";
+                }).catch((error) => {
+                    alert("حدث خطأ أثناء النشر: " + error.message);
+                });
+            }
         }
 
+        // جلب الواجبات بشكل مباشر ولحظي من السحابة لكل المستخدمين
         function loadHomeworks() {
             const ul = document.getElementById("homeworkList");
             if (!ul) return;
-            ul.innerHTML = "";
-
-            let list = JSON.parse(localStorage.getItem("we_homeworks") || "[]");
             const role = localStorage.getItem("we_role");
 
-            if (list.length === 0) {
-                ul.innerHTML = "<p style='color:#777; font-size:14px; padding:10px;'>لا توجد واجبات مطلوبة حالياً من الإدارة.</p>";
-                return;
+            if (typeof db !== 'undefined') {
+                db.collection("homeworks").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                    ul.innerHTML = "";
+                    if (snapshot.empty) {
+                        ul.innerHTML = "<p style='color:#777; font-size:14px; padding:10px;'>لا توجد واجبات مطلوبة حالياً من الإدارة.</p>";
+                        return;
+                    }
+                    snapshot.forEach((doc) => {
+                        let hwData = doc.data();
+                        let docId = doc.id;
+                        let li = document.createElement("li");
+                        let actionBtn = (role === "admin") 
+                            ? '<button onclick="deleteHomework(\'' + docId + '\')">حذف الواجب</button>' 
+                            : '<span style="color:#0099bb; font-size:12px; font-weight:bold;">مطلوب من الإدارة</span>';
+                        
+                        li.innerHTML = '<span>📌 ' + hwData.text + '</span> ' + actionBtn;
+                        ul.appendChild(li);
+                    });
+                });
             }
-
-            list.forEach(function(hw, idx) {
-                let li = document.createElement("li");
-                let actionBtn = (role === "admin") 
-                    ? '<button onclick="deleteHomework(' + idx + ')">حذف الواجب</button>' 
-                    : '<span style="color:#0099bb; font-size:12px; font-weight:bold;">مطلوب من الإدارة</span>';
-                
-                li.innerHTML = '<span>📌 ' + hw + '</span> ' + actionBtn;
-                ul.appendChild(li);
-            });
         }
 
-        function deleteHomework(idx) {
-            let list = JSON.parse(localStorage.getItem("we_homeworks") || "[]");
-            list.splice(idx, 1);
-            localStorage.setItem("we_homeworks", JSON.stringify(list));
-            loadHomeworks();
+        function deleteHomework(docId) {
+            if (typeof db !== 'undefined') {
+                db.collection("homeworks").doc(docId).delete().catch((error) => {
+                    alert("حدث خطأ أثناء الحذف: " + error.message);
+                });
+            }
         }
 
         function openGame(num) {
